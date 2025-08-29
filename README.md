@@ -1,1 +1,112 @@
-# PGY-test
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>佳里奇美醫院｜臨床情境創意教學</title>
+<style>
+/* === 基礎樣式 === */
+:root{
+  --bg:#f7f9fb; --card:#fff; --ink:#1a1f36; --muted:#5b6474;
+  --primary:#1677ff; --primary-ink:#fff; --accent:#22c55e; --danger:#ef4444;
+  --border:#e5e7eb; --hint:#fff7ed; --hint-border:#fed7aa;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft JhengHei",sans-serif;}
+header{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);}
+.topbar{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.brand{font-weight:700}
+.grow{flex:1}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+select,input[type="checkbox"],button,.btn{border:1px solid var(--border);background:#fff;color:var(--ink);border-radius:8px;padding:8px 10px;font-size:14px;}
+button.primary{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.progress{height:8px;background:#e9eef6;border-radius:999px;overflow:hidden;margin-top:6px;}
+.bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),#5b9bff);}
+main{max-width:1100px;margin:16px auto;padding:0 16px}
+.grid{display:grid;gap:16px;grid-template-columns:1.2fr .8fr;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 10px rgba(16,24,40,.04);}
+.pane{padding:16px 18px}
+.tag{background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:999px;font-size:12px}
+.diff{background:#ecfeff;color:#0e7490}
+.choice{border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;}
+.choice.correct{border-color:#b7f7c6;background:#f0fff4}
+.choice.wrong{border-color:#ffc9c9;background:#fff5f5}
+.hint{background:var(--hint);border:1px dashed var(--hint-border);color:#8a5a2b;padding:10px 12px;border-radius:10px;display:none;margin-top:8px;}
+@media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">佳里奇美醫院｜臨床情境創意教學</div>
+    <div class="grow">
+      <div class="progress"><div id="progressBar" class="bar"></div></div>
+      <div id="progressText" style="font-size:13px;color:var(--muted)"></div>
+    </div>
+    <div class="controls">
+      <select id="mode"><option value="practice">練習模式</option><option value="exam">考試模式</option></select>
+      <button id="reset">重置進度</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="grid">
+    <section class="card pane" id="questionPane">
+      <div id="qMeta"></div>
+      <h2 id="qTitle"></h2>
+      <div id="qVignette"></div>
+      <div id="qChoices"></div>
+      <div class="hint" id="qHint"></div>
+      <div>
+        <button id="toggleHint">顯示解題建議</button>
+        <button id="submit" class="primary">提交作答</button>
+        <button id="next">下一題</button>
+        <button id="finish">交卷</button>
+      </div>
+    </section>
+    <aside class="card pane">
+      <h3>解題建議</h3>
+      <div id="adviceText"></div>
+      <h3>標準解析</h3>
+      <div id="rationaleText"></div>
+    </aside>
+  </div>
+</main>
+<script>
+const QUESTIONS = [
+  {
+    id:"Q1",title:"急性心肌梗塞初步處置",
+    vignette:"65歲男性因胸痛至急診，心電圖顯示ST段上升。",
+    choices:[{key:"A",text:"安排胸部X光檢查"},{key:"B",text:"給予高劑量類固醇"},{key:"C",text:"立即進行心導管檢查"},{key:"D",text:"給予抗生素治療"}],
+    answer:"C",
+    advice:"ST段上升心肌梗塞需立即開通血管，第一時間進行心導管評估與治療。",
+    rationale:"急性STEMI的標準處置是立即心導管介入以恢復血流，延遲會增加心肌損傷。"
+  },
+  {
+    id:"Q2",title:"急性闌尾炎確診檢查",
+    vignette:"35歲女性，腹痛，超音波顯示右下腹液體積聚，疑似急性闌尾炎。",
+    choices:[{key:"A",text:"心電圖"},{key:"B",text:"腹部MRI"},{key:"C",text:"胸部X光"},{key:"D",text:"腹部CT掃描"}],
+    answer:"D",
+    advice:"急性闌尾炎的影像確診工具以腹部CT掃描為佳，能判斷有無穿孔。",
+    rationale:"CT可清楚顯示闌尾發炎程度與併發症，是最常用的確認工具。"
+  },
+  {
+    id:"Q3",title:"高血糖急症處置",
+    vignette:"50歲男性糖尿病，血糖 450 mg/dL，頻尿與口渴。",
+    choices:[{key:"A",text:"限制水分攝取"},{key:"B",text:"給予抗生素"},{key:"C",text:"口服降血糖藥物"},{key:"D",text:"立即給予胰島素注射"}],
+    answer:"D",
+    advice:"血糖值極高且有急症可能，需立即給予胰島素控制血糖。",
+    rationale:"血糖>400 mg/dL 且有症狀須警惕 DKA/HHS，需及早降糖避免併發症。"
+  },
+  {
+    id:"Q4",title:"股骨頸骨折治療方式",
+    vignette:"70歲女性跌倒後髖部疼痛，X光顯示股骨頸骨折。",
+    choices:[{key:"A",text:"保守治療臥床休息"},{key:"B",text:"安排物理治療"},{key:"C",text:"給止痛藥並觀察"},{key:"D",text:"進行手術固定"}],
+    answer:"D",
+    advice:"高齡股骨頸骨折為避免臥床併發症，通常需手術固定恢復活動。",
+    rationale:"早期手術可減少長期臥床導致的肺炎、血栓等併發症。"
+  },
+  {
+    id:"Q5",title:"肺部浸潤影常見診斷",
+    vignette:"25歲男性發燒、咳嗽、胸痛，胸部X光顯示右下肺葉浸潤影。",
+    choices:[{key:"A",text:"氣胸"},{key:"B",text:"肺癌"},{key:"C",text:"肺炎"},{key
